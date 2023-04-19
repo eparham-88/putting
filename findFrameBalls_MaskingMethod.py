@@ -13,32 +13,38 @@ def filter_radius(y, radius):
     # 13.1 at 786.5
     expected_radius = 0.0152334*y + 1.1189
 
-    return abs(expected_radius - radius) / expected_radius > 0.3 or radius < 3.0
+    return abs(expected_radius - radius) / expected_radius > 0.3 or radius < 4.0
 
 
 
 def findFrameBalls_masks(frame, frame_balls, print_intermediate_frames=False):
     # Do stuff to frame_out to change the output video
     # frame_out= cv2.warpPerspective(frame, H, size)
-    frame_LAB = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
-    lower = [0,    0,  80] # [  0,   0,  80]
-    upper = [360,  50, 100] # [360,  30, 100]
+    frame_LAB = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    lowers = [[100.0, 16.0,  90.0], [  0.0, 3.0,   90.0], [  0.0, 0.0, 75.0]]
+    uppers = [[300.0, 42.0, 100.0], [300.0, 15.0, 100.0], [360.0, 5.0, 100.0]]
 
-    lower_np = np.array([(lower[0]/360)*255,
-                            (lower[1]/100)*255,
-                            (lower[2]/100)*255]).astype(int)
-    
-    upper_np = np.array([(upper[0]/360)*255,
-                            (upper[1]/100)*255,
-                            (upper[2]/100)*255]).astype(int)
+    range = np.zeros((frame_LAB.shape[0], frame_LAB.shape[1]))
+
+    for (lower, upper) in zip(lowers, uppers):
+
+        lower_np = np.array([(lower[0]/360.0)*255,
+                             (lower[1]/100.0)*255,
+                             (lower[2]/100.0)*255]).astype(int)
+        
+        upper_np = np.array([(upper[0]/360.0)*255,
+                             (upper[1]/100.0)*255,
+                             (upper[2]/100.0)*255]).astype(int)
+        
+        range += cv2.inRange(frame_LAB, lower_np, upper_np)
+
 
 
     # range, mask, blur, threshold
-    range = cv2.inRange(frame_LAB, lower_np, upper_np)
     mask = range > 0
     gray = np.zeros_like(mask, np.uint8); gray[mask] = 255
     blurred = cv2.blur(gray, (3,3))
-    _, threshold = cv2.threshold(blurred, 150, 255, cv2.THRESH_OTSU)
+    _, threshold = cv2.threshold(blurred, 200, 255, cv2.THRESH_OTSU)
 
     frame_mask = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
     frame_blurred = cv2.cvtColor(blurred, cv2.COLOR_GRAY2BGR)
@@ -59,7 +65,7 @@ def findFrameBalls_masks(frame, frame_balls, print_intermediate_frames=False):
 
         if threshold[int(y),int(x)] == 0: continue
 
-        if density < 60: continue
+        if density < 65: continue
 
         if filter_radius(y, radius): continue
 

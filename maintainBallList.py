@@ -43,7 +43,7 @@ def updateBalls(balls, frame_balls, lines):
                 best_distance = distance
                 best_ball = ball
 
-        if best_distance < 100 and direction_matches(best_ball, frame_ball):
+        if best_distance < 55 and direction_matches(best_ball, frame_ball): # 15?
             # found velocity match
             best_ball.velocity_from_previous(frame_ball)
             best_ball.display(lines)

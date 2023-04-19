@@ -125,8 +125,8 @@ if __name__ == "__main__":
     #     print("\nYour ran this wrong, you friggin fart smeller. You need to run: python readVideo.py inputFilename.MOV outputFilename.mp4\n")
     #     sys.exit(1)
 
-    fname_in = "input videos/IMG_8199.MOV"
-    fname_out = "output/8199_output.mp4"
+    fname_in = "input videos/IMG_8198.MOV"
+    fname_out = "output/8198_output.mp4"
     print("\nInput filename = ", fname_in, "\nOutput filename = ", fname_out, "\n")
 
     readWriteVideo(fname_in, fname_out)
