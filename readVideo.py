@@ -59,7 +59,7 @@ def readVideo_findHomograph(fname_in, max_frames):
     cap.release()
     cv2.destroyAllWindows()
 
-    H = runHomography(best_frame, best_frame_balls, 100)
+    H = runHomography(best_frame, best_frame_balls, 5000)
     first_frame_out = cv2.warpPerspective(frame, H, size)
     fname_out = 'output/frame_with_most_balls.png'
     cv2.imwrite(fname_out, first_frame_out)
@@ -90,7 +90,6 @@ def readWriteVideo(fname_in, fname_out, H):
     lines = np.zeros((frame_height, frame_width, 3))
 
     frame_index = 0
-    H_matrix = None
     # while loop looks at each frame.
     while cap.isOpened():
         ret, frame = cap.read()
@@ -102,7 +101,8 @@ def readWriteVideo(fname_in, fname_out, H):
 
         if 1:
             # Use the HSV masking approach
-            frame_contours = findFrameBalls_masks(frame, frame_balls, frame_index == 0)
+            frame_contours = findFrameBalls_masks(frame, frame_balls, frame_index == 0) # find balls, then homography
+            # frame_contours = findFrameBalls_masks(cv2.warpPerspective(frame, H, size), frame_balls, frame_index == 0) # homography, then find balls (not tuned correctly yet)
 
         else:
             # use the CNN approach
@@ -116,8 +116,8 @@ def readWriteVideo(fname_in, fname_out, H):
         lines_mask = lines[:,:,0] > 0
         frame_contours[lines_mask] = 0.5*frame_contours[lines_mask] + 0.5*np.array([255, 0, 0]).astype(np.uint8)
 
-        out.write(cv2.warpPerspective(frame_contours, H, size))
-        # out.write(frame_contours)
+        out.write(cv2.warpPerspective(frame_contours, H, size)) # find balls, then homography
+        # out.write(frame_contours) # homography, then find balls (not tuned correctly yet)
         if cv2.waitKey(1) == ord('q'):
             break
 
