@@ -108,27 +108,27 @@ def getHomography_pts_src(frame, iter):
     pts_src = None
 
     ### OLD APPROACH (works about as good, repeatable) ###
-    # pts_src = np.array([[156, 162], [108, 245], [695, 235], [583, 155]])
-    # pts_src = np.array([[156, 152],
-    #                     [108, 245],
-    #                     [695, 235],
-    #                     [583, 147]])
-    # pts_src[0,1] -= iter
-    # pts_src[3,1] -= iter
+    pts_src = np.array([[156, 162], [108, 245], [695, 235], [583, 155]])
+    pts_src = np.array([[156, 152],
+                        [108, 245],
+                        [695, 235],
+                        [583, 147]])
+    pts_src[0,1] -= iter
+    pts_src[3,1] -= iter
 
     ### NEW APPROACH (works better, but not consistent) ###
-    scale_x = 5.0; scale_y = 100.0
-    average_slope_thresh = 5
-    average_slope = None
-    while average_slope == None or abs(average_slope) > average_slope_thresh:
-        pts_src = np.array([[int(np.random.normal(156, scale_x)), int(np.random.normal(152, scale_y))],
-                            [int(np.random.normal(108, scale_x)), int(np.random.normal(245, scale_y))],
-                            [int(np.random.normal(695, scale_x)), int(np.random.normal(235, scale_y))],
-                            [int(np.random.normal(583, scale_x)), int(np.random.normal(147, scale_y))]])
-        average_slope = (math.degrees(math.atan2(pts_src[0,1] - pts_src[3,1], pts_src[0,0] - pts_src[3,0])) +
-                         math.degrees(math.atan2(pts_src[1,1] - pts_src[2,1], pts_src[1,0] - pts_src[2,0])))/2
-        if (average_slope < 0):
-            average_slope += 360
+    # scale_x = 5.0; scale_y = 100.0
+    # average_slope_thresh = 5
+    # average_slope = None
+    # while average_slope == None or abs(average_slope) > average_slope_thresh:
+    #     pts_src = np.array([[int(np.random.normal(156, scale_x)), int(np.random.normal(152, scale_y))],
+    #                         [int(np.random.normal(108, scale_x)), int(np.random.normal(245, scale_y))],
+    #                         [int(np.random.normal(695, scale_x)), int(np.random.normal(235, scale_y))],
+    #                         [int(np.random.normal(583, scale_x)), int(np.random.normal(147, scale_y))]])
+    #     average_slope = (math.degrees(math.atan2(pts_src[0,1] - pts_src[3,1], pts_src[0,0] - pts_src[3,0])) +
+    #                      math.degrees(math.atan2(pts_src[1,1] - pts_src[2,1], pts_src[1,0] - pts_src[2,0])))/2
+    #     if (average_slope < 0):
+    #         average_slope += 360
     
     return pts_src
 

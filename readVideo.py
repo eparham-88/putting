@@ -12,7 +12,7 @@ from common import (find_maxima, read_img, visualize_maxima,
                     homography_transform)
 
 from Ball import Ball, ball_distance, direction_matches
-from findFrameBalls_MaskingMethod import findFrameBalls_masks
+from findFrameBalls_MaskingMethod import findFrameBalls_masks, findFrameBalls_masks_H
 from findFrameBalls_CNNMethod import findFrameBalls_CNN
 from maintainBallList import updateBalls
 from homography import getHomography_pts_src, getHomography_pts_dst, runHomography
@@ -60,6 +60,35 @@ def readVideo_findHomograph(fname_in, max_frames):
     cv2.destroyAllWindows()
 
     H = runHomography(best_frame, best_frame_balls, 5000)
+
+    frame_edges = np.array([[                  0, 0                  ],
+                            [best_frame.shape[1], 0                  ],
+                            [0                  , best_frame.shape[0]],
+                            [best_frame.shape[1], best_frame.shape[0]]])
+    
+    frame_edges_h = homography_transform(frame_edges, H)
+
+    size_h = [int(np.max(frame_edges_h[:,1]))+1-int(np.min(frame_edges_h[:,1])),
+            int(np.max(frame_edges_h[:,0]))+1-int(np.min(frame_edges_h[:,0]))]
+    
+    H_translate = np.array([[1, 0, -np.min(frame_edges_h[:,0])],
+                            [0, 1, -np.min(frame_edges_h[:,1])],
+                            [0, 0, 1]]).astype(float)
+    
+    H = H_translate @ H
+
+    frame_edges_h = homography_transform(frame_edges, H)
+
+    size_h = [int(np.max(frame_edges_h[:,1]))+1-int(np.min(frame_edges_h[:,1])),
+            int(np.max(frame_edges_h[:,0]))+1-int(np.min(frame_edges_h[:,0]))]
+
+    scale = min( best_frame.shape[0] / size_h[0], best_frame.shape[1] / size_h[1] )
+
+    H_scale = np.array([[scale, 0, 0],
+                        [0, scale, 0],
+                        [0, 0, 1]]).astype(float)
+
+    H = H_scale @ H
     first_frame_out = cv2.warpPerspective(frame, H, size)
     fname_out = 'output/frame_with_most_balls.png'
     cv2.imwrite(fname_out, first_frame_out)
@@ -77,7 +106,7 @@ def readVideo_findHomograph(fname_in, max_frames):
 
 
 
-def readWriteVideo(fname_in, fname_out, H):
+def readWriteVideo(fname_in, fname_out, H=np.array([])):
     # Setup cv2 stuff.
     cap = cv2.VideoCapture(fname_in)
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)); print("frame_count = ", frame_count)
@@ -101,14 +130,14 @@ def readWriteVideo(fname_in, fname_out, H):
 
         if 1:
             # Use the HSV masking approach
-            frame_contours = findFrameBalls_masks(frame, frame_balls, frame_index == 0) # find balls, then homography
-            # frame_contours = findFrameBalls_masks(cv2.warpPerspective(frame, H, size), frame_balls, frame_index == 0) # homography, then find balls (not tuned correctly yet)
-
+            if not H.any():
+                frame_contours = findFrameBalls_masks(frame, frame_balls, frame_index == 0) # find balls, then homography
+            else:
+                frame_contours = findFrameBalls_masks_H(cv2.warpPerspective(frame, H, size), frame_balls, frame_index==10)
         else:
             # use the CNN approach
             frame_contours = findFrameBalls_CNN(frame, frame_balls)
         
-
         updateBalls(balls, frame_balls, lines)
 
 
@@ -116,8 +145,8 @@ def readWriteVideo(fname_in, fname_out, H):
         lines_mask = lines[:,:,0] > 0
         frame_contours[lines_mask] = 0.5*frame_contours[lines_mask] + 0.5*np.array([255, 0, 0]).astype(np.uint8)
 
-        out.write(cv2.warpPerspective(frame_contours, H, size)) # find balls, then homography
-        # out.write(frame_contours) # homography, then find balls (not tuned correctly yet)
+        # out.write(cv2.warpPerspective(frame_contours, H, size)) # find balls, then homography
+        out.write(frame_contours) # homography, then find balls (not tuned correctly yet)
         if cv2.waitKey(1) == ord('q'):
             break
 
@@ -134,11 +163,11 @@ if __name__ == "__main__":
     #     print("\nYour ran this wrong, you friggin fart smeller. You need to run: python readVideo.py inputFilename.MOV outputFilename.mp4\n")
     #     sys.exit(1)
 
-    fname_in = "input videos/IMG_8198.MOV"
-    fname_out = "output/8198_output.mp4"
+    fname_in = "input videos/IMG_8199.MOV"
+    fname_out = "output/8199_output.mp4"
     print("\nInput filename = ", fname_in, "\nOutput filename = ", fname_out, "\n")
 
-    H = readVideo_findHomograph(fname_in, 100)
+    H = readVideo_findHomograph("input videos/IMG_8199.MOV", 100)
     readWriteVideo(fname_in, fname_out, H)
 
     
