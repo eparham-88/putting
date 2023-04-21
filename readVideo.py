@@ -10,6 +10,7 @@ import math
 from common import (find_maxima, read_img, visualize_maxima,
                     visualize_scale_space, gaussian_filter,
                     homography_transform)
+import pickle
 
 from Ball import Ball, ball_distance, direction_matches
 from findFrameBalls_MaskingMethod import findFrameBalls_masks, findFrameBalls_masks_H
@@ -45,7 +46,7 @@ def readVideo_findHomograph(fname_in, max_frames):
             break
 
         frame_balls = []
-        frame = findFrameBalls_masks(frame, frame_balls, frame_index == 0)
+        frame = findFrameBalls_masks(frame, frame_balls, frame_index)
         if (best_ball_count == None or len(frame_balls) > best_ball_count):
             best_frame_balls = np.copy(frame_balls)
             best_ball_count = len(frame_balls)
@@ -131,14 +132,14 @@ def readWriteVideo(fname_in, fname_out, H=np.array([])):
         if 1:
             # Use the HSV masking approach
             if not H.any():
-                frame_contours = findFrameBalls_masks(frame, frame_balls, frame_index == 0) # find balls, then homography
+                frame_contours = findFrameBalls_masks(frame, frame_balls, frame_index) # find balls, then homography
             else:
-                frame_contours = findFrameBalls_masks_H(cv2.warpPerspective(frame, H, size), frame_balls, frame_index==10)
+                frame_contours = findFrameBalls_masks_H(cv2.warpPerspective(frame, H, size), frame_balls, frame_index)
         else:
             # use the CNN approach
             frame_contours = findFrameBalls_CNN(frame, frame_balls)
         
-        updateBalls(balls, frame_balls, lines)
+        updateBalls(balls, frame_balls, lines, frame_index)
 
 
         # apply lines
@@ -157,19 +158,46 @@ def readWriteVideo(fname_in, fname_out, H=np.array([])):
     out.release()
     cv2.destroyAllWindows()
 
+    return frame_balls
+
 
 if __name__ == "__main__":
-    # if len(sys.argv) != 3 or ((sys.argv[1])[-4:] != ".MOV" and (sys.argv[1])[-4:] != ".mov" and (sys.argv[1])[-4:] != ".mp4") or (sys.argv[2])[-4:] != ".mp4":
-    #     print("\nYour ran this wrong, you friggin fart smeller. You need to run: python readVideo.py inputFilename.MOV outputFilename.mp4\n")
-    #     sys.exit(1)
 
-    fname_in = "input videos/IMG_8199.MOV"
-    fname_out = "output/8199_output.mp4"
-    print("\nInput filename = ", fname_in, "\nOutput filename = ", fname_out, "\n")
+    # names_in = ["IMG_8199",
+    #             "IMG_8196",
+    #             "IMG_8197",
+    #             "IMG_8198",
+    #             "IMG_8200",
+    #             "IMG_8203"]
+
+    names_in = ["IMG_8197"]
+    
+    
 
     H = readVideo_findHomograph("input videos/IMG_8199.MOV", 100)
-    readWriteVideo(fname_in, fname_out, H)
 
+    detected_balls = []
+
+    for name in names_in:
+        balls = []
+
+        fname_in = "input videos/" + name + ".MOV"
+        fname_out = "output/" + name + ".mp4"
+
+        print("\nInput filename = ", fname_in, "\nOutput filename = ", fname_out, "\n")
+
+        clip_balls = readWriteVideo(fname_in, fname_out, H)
+
+        for ball in balls:
+            if ball.displayed:
+                detected_balls.append(ball)
+
+        
+
+
+
+    # with open('balls.pkl', 'wb') as f:
+    #     pickle.dump(detected_balls, f)
     
 
         

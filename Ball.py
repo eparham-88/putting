@@ -3,15 +3,18 @@ import math
 
 
 class Ball:
-    def __init__(self,position,radius):
+    def __init__(self,position,radius,index):
         self.positions = [position]
         self.radii = [radius]
+        self.indices = [index]
         self.velocities = [(0,0)]
         self.updated = True
+        self.displayed = False
 
-    def update(self,ball):
+    def update(self,ball,index):
         self.positions[-1] = ball.positions[-1]
         self.radii[-1] = ball.radii[-1]
+        self.indices[-1] = index
         self.updated = True
 
     def velocity_from_previous(self,ball):
@@ -60,9 +63,11 @@ class Ball:
 
                 deviation += abs(dx-this_dx) + abs(dy-this_dy)
 
-            print(deviation)
+            # print(deviation)
             if deviation > 5:
                 self.positions = [self.positions[-1]]
+                self.radii = [self.radii[-1]]
+                self.indices = [self.indices[-1]]
 
             # draw every line up to and including the cutoff
             for i in range(1, len(self.positions)):
@@ -72,6 +77,8 @@ class Ball:
 
                 cv2.line(frame, start, end, (255, 0, 0), width)
 
+            self.displayed = True
+
         elif len(self.positions) > cutoff:
             # just append next line
             start = (int(self.positions[-2][0]), int(self.positions[-2][1]))
@@ -79,6 +86,8 @@ class Ball:
             width = int(0.5 * (self.radii[-1] + self.radii[-2]))
 
             cv2.line(frame, start, end, (255, 0, 0), width)
+
+            self.displayed = True
 
 
     

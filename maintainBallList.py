@@ -12,7 +12,7 @@ import math
 from Ball import Ball, ball_distance, direction_matches
 
 
-def updateBalls(balls, frame_balls, lines):
+def updateBalls(balls, frame_balls, lines, index):
     # Cycle through frame_balls to see if balls have changed positions
     leftover_balls_1 = []
 
@@ -23,7 +23,7 @@ def updateBalls(balls, frame_balls, lines):
         # if a match exists, the ball didn't move
         for ball in balls:
             if ball_distance(ball, frame_ball) < 1.0:
-                ball.update(frame_ball)
+                ball.update(frame_ball, index)
                 match = True
                 break
 

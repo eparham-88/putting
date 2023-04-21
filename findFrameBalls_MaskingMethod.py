@@ -17,7 +17,7 @@ def filter_radius(y, radius):
 
 
 
-def findFrameBalls_masks(frame, frame_balls, print_intermediate_frames=False):
+def findFrameBalls_masks(frame, frame_balls, index, print_intermediate_frames=False):
     # Do stuff to frame_out to change the output video
     # frame_out= cv2.warpPerspective(frame, H, size)
     frame_LAB = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -49,7 +49,7 @@ def findFrameBalls_masks(frame, frame_balls, print_intermediate_frames=False):
     frame_mask = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
     frame_blurred = cv2.cvtColor(blurred, cv2.COLOR_GRAY2BGR)
     frame_threshold = cv2.cvtColor(threshold, cv2.COLOR_GRAY2BGR)
-    frame_contours = frame.copy() # frame_contours = frame_threshold.copy()
+    frame_contours = frame.copy() # frame_contours = frame.copy()
 
 
     # contour
@@ -69,7 +69,7 @@ def findFrameBalls_masks(frame, frame_balls, print_intermediate_frames=False):
 
         if filter_radius(y, radius): continue
 
-        ball = Ball((x,y), radius)
+        ball = Ball((x,y), radius, index)
         frame_balls.append(ball)
 
         cv2.circle(frame_contours,(int(x), int(y)),int(radius),(255,0,0),2)
@@ -87,7 +87,6 @@ def findFrameBalls_masks(frame, frame_balls, print_intermediate_frames=False):
             cv2.imwrite('output/frame_blurred.png', frame_blurred)
             cv2.imwrite('output/frame_threshold.png', frame_threshold)
             cv2.imwrite('output/frame_contours.png', frame_contours)
-            print("shit")
 
     return frame_contours
 
@@ -95,7 +94,7 @@ def findFrameBalls_masks(frame, frame_balls, print_intermediate_frames=False):
 
 
 
-def findFrameBalls_masks_H(frame, frame_balls, print_intermediate_frames=False):
+def findFrameBalls_masks_H(frame, frame_balls, index, print_intermediate_frames=False):
     # Do stuff to frame_out to change the output video
     # frame_out= cv2.warpPerspective(frame, H, size)
     frame_LAB = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -155,7 +154,7 @@ def findFrameBalls_masks_H(frame, frame_balls, print_intermediate_frames=False):
 
         if radius < 7.0 or radius > 11.5: continue
 
-        ball = Ball((x,y),radius)
+        ball = Ball((x,y),radius,index)
         frame_balls.append(ball)
 
         cv2.circle(frame_contours,(int(x), int(y)),int(radius),(255,0,0),2)
@@ -175,7 +174,6 @@ def findFrameBalls_masks_H(frame, frame_balls, print_intermediate_frames=False):
         cv2.imwrite('output/frame_blurred.png', frame_blurred)
         cv2.imwrite('output/frame_threshold.png', frame_threshold)
         cv2.imwrite('output/frame_contours.png', frame_contours)
-        print("shit")
 
     return frame_contours
 
