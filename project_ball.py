@@ -6,7 +6,7 @@ import math
 from Ball import Ball
 import matplotlib.pyplot as plt
 from readVideo import readWriteVideo, balls
-from vector_field import Path
+from vector_field_old import Path
 
 
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     fps = cap.get(cv2.CAP_PROP_FPS); print("fps = ", fps)
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     out = cv2.VideoWriter("output/prediction.mp4", fourcc, fps, size)
-    lines = np.zeros((frame_height, frame_width, 3))
+    lines_H = np.zeros((frame_height, frame_width, 3))
     frame_index = 0
     while cap.isOpened():
         ret, frame = cap.read()
@@ -55,13 +55,13 @@ if __name__ == "__main__":
             # print("Can't receive frame. Exiting...")
             break
 
-        frame = cv2.warpPerspective(frame, H, size)
+        frame_H = cv2.warpPerspective(frame, H, size)
 
         if frame_index > 27 and y_pos > 600:
 
 
-            x_index = min(round(x_pos/cell_size), int(frame.shape[0]/cell_size)-1)
-            y_index = min(round(y_pos/cell_size), int(frame.shape[1]/cell_size)-1)
+            x_index = min(round(x_pos/cell_size), int(frame_H.shape[0]/cell_size)-1)
+            y_index = min(round(y_pos/cell_size), int(frame_H.shape[1]/cell_size)-1)
 
 
             den = math.sqrt(x_prev_vel**2 + y_prev_vel**2)
@@ -72,14 +72,14 @@ if __name__ == "__main__":
             y_prev_vel = y_prev_vel / den
 
             # apply friction
-            x_vel -= x_prev_vel*friction_acceleration # 2
+            x_vel -= x_prev_vel*friction_acceleration
             y_vel -= y_prev_vel*friction_acceleration
 
             # apply vector field
-            x_vel += 5*vector_field[x_index, y_index][0] # 0.4
+            x_vel += 5*vector_field[x_index, y_index][0]
             y_vel += vector_field[x_index, y_index][1]
 
-            cv2.line(lines, (int(x_pos), int(y_pos)), (int(x_pos+x_vel), int(y_pos+y_vel)), (0,0,255), 5)
+            cv2.line(lines_H, (int(x_pos), int(y_pos)), (int(x_pos+x_vel), int(y_pos+y_vel)), (0,0,255), 5)
 
 
             # update position
@@ -91,7 +91,7 @@ if __name__ == "__main__":
             y_prev_vel = y_prev_vel
 
 
-
+        lines = cv2.warpPerspective(lines_H, np.linalg.inv(H), size)
         lines_mask = lines[:,:,2] > 0
         frame[lines_mask] = 0.5*frame[lines_mask] + 0.5*np.array([0, 0, 255]).astype(np.uint8)
 
