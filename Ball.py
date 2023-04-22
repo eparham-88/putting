@@ -11,10 +11,10 @@ class Ball:
         self.updated = True
         self.displayed = False
 
-    def update(self,ball,index):
+    def update(self,ball):
         self.positions[-1] = ball.positions[-1]
         self.radii[-1] = ball.radii[-1]
-        self.indices[-1] = index
+        self.indices[-1] = ball.indices[-1]
         self.updated = True
 
     def velocity_from_previous(self,ball):
@@ -30,6 +30,7 @@ class Ball:
         self.positions.append(ball.positions[-1])
         self.radii.append(ball.radii[-1])
         self.velocities.append((dx, dy))
+        self.indices.append(ball.indices[-1])
         self.updated = True
 
         return (dx, dy)

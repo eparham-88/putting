@@ -13,7 +13,7 @@ from common import (find_maxima, read_img, visualize_maxima,
 import pickle
 
 from Ball import Ball, ball_distance, direction_matches
-from findFrameBalls_MaskingMethod import findFrameBalls_masks, findFrameBalls_masks_H
+from findFrameBalls_MaskingMethod import findFrameBalls_masks, findFrameBalls_masks_H, findFrameBalls_masks_F
 from findFrameBalls_CNNMethod import findFrameBalls_CNN
 from maintainBallList import updateBalls
 from homography import getHomography_pts_src, getHomography_pts_dst, runHomography
@@ -107,7 +107,7 @@ def readVideo_findHomograph(fname_in, max_frames):
 
 
 
-def readWriteVideo(fname_in, fname_out, H=np.array([])):
+def readWriteVideo(fname_in, fname_out, H=np.array([]), final=False):
     # Setup cv2 stuff.
     cap = cv2.VideoCapture(fname_in)
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)); print("frame_count = ", frame_count)
@@ -133,8 +133,10 @@ def readWriteVideo(fname_in, fname_out, H=np.array([])):
             # Use the HSV masking approach
             if not H.any():
                 frame_contours = findFrameBalls_masks(frame, frame_balls, frame_index) # find balls, then homography
-            else:
+            elif not final:
                 frame_contours = findFrameBalls_masks_H(cv2.warpPerspective(frame, H, size), frame_balls, frame_index)
+            else:
+                frame_contours = findFrameBalls_masks_F(cv2.warpPerspective(frame, H, size), frame_balls, frame_index)
         else:
             # use the CNN approach
             frame_contours = findFrameBalls_CNN(frame, frame_balls)
@@ -163,18 +165,19 @@ def readWriteVideo(fname_in, fname_out, H=np.array([])):
 
 if __name__ == "__main__":
 
-    # names_in = ["IMG_8199",
-    #             "IMG_8196",
-    #             "IMG_8197",
-    #             "IMG_8198",
-    #             "IMG_8200",
-    #             "IMG_8203"]
+    names_in = ["IMG_8199",
+                "IMG_8196",
+                "IMG_8197",
+                "IMG_8198",
+                "IMG_8200",
+                "IMG_8203"]
 
-    names_in = ["IMG_8197"]
     
     
 
     H = readVideo_findHomograph("input videos/IMG_8199.MOV", 100)
+    with open('homography.pkl', 'wb') as f:
+        pickle.dump(H, f)
 
     detected_balls = []
 
@@ -196,8 +199,8 @@ if __name__ == "__main__":
 
 
 
-    # with open('balls.pkl', 'wb') as f:
-    #     pickle.dump(detected_balls, f)
+    with open('balls.pkl', 'wb') as f:
+        pickle.dump(detected_balls, f)
     
 
         

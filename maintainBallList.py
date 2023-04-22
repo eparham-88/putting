@@ -23,7 +23,7 @@ def updateBalls(balls, frame_balls, lines, index):
         # if a match exists, the ball didn't move
         for ball in balls:
             if ball_distance(ball, frame_ball) < 1.0:
-                ball.update(frame_ball, index)
+                ball.update(frame_ball)
                 match = True
                 break
 
@@ -43,7 +43,7 @@ def updateBalls(balls, frame_balls, lines, index):
                 best_distance = distance
                 best_ball = ball
 
-        if best_distance < 50 and direction_matches(best_ball, frame_ball):
+        if best_distance < 20 and direction_matches(best_ball, frame_ball):
             # found velocity match
             best_ball.velocity_from_previous(frame_ball)
             best_ball.display(lines)
