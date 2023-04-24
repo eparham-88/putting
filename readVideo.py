@@ -14,7 +14,7 @@ import pickle
 
 from Ball import Ball, ball_distance, direction_matches
 from findFrameBalls_MaskingMethod import findFrameBalls_masks, findFrameBalls_masks_H, findFrameBalls_masks_F
-from findFrameBalls_CNNMethod import findFrameBalls_CNN
+from findFrameBalls_CNNMethod import findFrameBalls_CNN, init_CNN_ours, init_CNN_pretrained
 from maintainBallList import updateBalls
 from homography import getHomography_pts_src, getHomography_pts_dst, runHomography
 
@@ -97,16 +97,6 @@ def readVideo_findHomograph(fname_in, max_frames):
     return H
 
 
-
-
-
-
-
-
-
-
-
-
 def readWriteVideo(fname_in, fname_out, H=np.array([]), final=False):
     # Setup cv2 stuff.
     cap = cv2.VideoCapture(fname_in)
@@ -118,6 +108,11 @@ def readWriteVideo(fname_in, fname_out, H=np.array([]), final=False):
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     out = cv2.VideoWriter(fname_out, fourcc, fps, size)
     lines = np.zeros((frame_height, frame_width, 3))
+    CNN_ours = 1
+    if CNN_ours:
+        model = init_CNN_ours()
+    else:
+        model = init_CNN_pretrained()
 
     frame_index = 0
     # while loop looks at each frame.
@@ -139,7 +134,7 @@ def readWriteVideo(fname_in, fname_out, H=np.array([]), final=False):
                 frame_contours = findFrameBalls_masks_F(cv2.warpPerspective(frame, H, size), frame_balls, frame_index)
         else:
             # use the CNN approach
-            frame_contours = findFrameBalls_CNN(frame, frame_balls)
+            frame_contours = findFrameBalls_CNN(frame, frame_balls, frame_index, model)
         
         updateBalls(balls, frame_balls, lines, frame_index)
 
@@ -194,10 +189,6 @@ if __name__ == "__main__":
         for ball in balls:
             if ball.displayed:
                 detected_balls.append(ball)
-
-        
-
-
 
     with open('balls.pkl', 'wb') as f:
         pickle.dump(detected_balls, f)
